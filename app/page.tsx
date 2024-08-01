@@ -13,18 +13,68 @@ import { firestore } from "../firebase";
 import { query, collection, getDocs } from "firebase/firestore";
 import { get } from "http";
 import { doc, getDoc, updateDoc, deleteDoc, setDoc } from "firebase/firestore";
-
+import { increment } from "firebase/firestore";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardMedia from "@mui/material/CardMedia";
+import CardActions from "@mui/material/CardActions";
+// function card{name,quantity:(name:string,quantity:number)}) {
+function CardCustom({
+  name,
+  quantity,
+  removeItem,
+  addItem,
+}: {
+  name: string;
+  quantity: number;
+  removeItem: (name: string) => void;
+  addItem: (name: string) => void;
+}) {
+  return (
+    <>
+      <CardContent>
+        <Typography variant="h5">{name}</Typography>
+        <Typography sx={{ mb: 1.5 }} color="text.secondary">
+          pantry name
+        </Typography>
+        <Stack direction="row" spacing={1}>
+          <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
+            Quantity
+          </Typography>
+          <Typography variant="body2">{quantity}</Typography>
+        </Stack>
+      </CardContent>
+      <CardActions>
+        <Button variant="contained" size="small" onClick={() => addItem(name)}>
+          Add Quantity
+        </Button>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() => removeItem(name)}
+        >
+          Remove Item
+        </Button>
+      </CardActions>
+    </>
+  );
+}
 export default function Home() {
-  const [inventory, setInventory] = useState<{ name: string }[]>([]); // Update the type of inventory state
+  // ... existing code ...
+  const [inventory, setInventory] = useState<
+    { name: string; quantity: number }[]
+  >([]);
+  // ... existing code ...// Update the type of inventory state
   const [open, setOpen] = useState(false);
   const [itemName, setItemName] = useState("");
 
   const updateInventory = async () => {
     const snapshot = query(collection(firestore, "inventory"));
     const docs = await getDocs(snapshot);
-    const inventoryList: { name: string }[] = [];
+    const inventoryList: { name: string; quantity: number }[] = [];
     docs.forEach((doc) => {
-      inventoryList.push({ name: doc.id, ...doc.data() });
+      const data = doc.data();
+      inventoryList.push({ name: doc.id, quantity: data.quantity || 0 });
     });
     console.log(inventoryList);
     setInventory(inventoryList);
@@ -43,7 +93,7 @@ export default function Home() {
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const quantity = docSnap.data().quantity;
-      if (quantity > 0) {
+      if (quantity > 1) {
         await updateDoc(docRef, { quantity: quantity - 1 });
       } else {
         await deleteDoc(docRef);
@@ -51,18 +101,33 @@ export default function Home() {
     }
     updateInventory();
   };
+  // const addItem = async (itemName: string) => {
+  //   const docRef = doc(collection(firestore, "inventory"));
+  //   const docSnap = await getDoc(docRef);
+  //   if (docSnap.exists()) {
+  //     const quantity = docSnap.data();
+  //     await updateDoc(docRef, { quantity: quantity.quantity + 1 });
+  //   } else {
+  //     await setDoc(docRef, { quantity: 1 });
+  //   }
+  //   updateInventory();
+  // };
+  // const addItem = async (itemName: string) => {
+  //   const docRef = doc(collection(firestore, "inventory"), itemName);
+  //   await setDoc(docRef, { quantity: 1 }, { merge: true });
+  //   updateInventory();
+  // };
   const addItem = async (itemName: string) => {
-    const docRef = doc(collection(firestore, "inventory"));
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      const quantity = docSnap.data();
-      await updateDoc(docRef, { quantity: quantity.quantity + 1 });
-    } else {
-      await setDoc(docRef, { quantity: 1 });
-    }
+    const docRef = doc(collection(firestore, "inventory"), itemName);
+    await setDoc(
+      docRef,
+      {
+        quantity: increment(1),
+      },
+      { merge: true }
+    );
     updateInventory();
   };
-
   useEffect(() => {
     updateInventory();
     console.log(inventory);
@@ -124,6 +189,44 @@ export default function Home() {
       <Button variant="contained" onClick={handleOpen}>
         Add Item
       </Button>
+      <Box>
+        <Box
+          width={"850px"}
+          height={"100px"}
+          border={"1px solid black"}
+          display={"flex"}
+          flexDirection={"column"}
+          gap={2}
+          justifyContent={"center"}
+          alignItems={"center"}
+        >
+          <Typography variant="h3" textTransform={"uppercase"}>
+            Inventory
+          </Typography>
+        </Box>
+      </Box>
+      <Stack
+        width={"850px"}
+        height={"auto"}
+        flexWrap={"wrap"}
+        direction={"row"}
+        gap={2}
+        overflow={"auto"}
+        p={1}
+      >
+        {inventory.map((item: { name: string; quantity: number }) => (
+          <Stack direction={"row"} key={item.name}>
+            <Card sx={{ height: "200px" }} variant="outlined">
+              <CardCustom
+                name={item.name}
+                quantity={item.quantity}
+                removeItem={removeItem}
+                addItem={addItem}
+              />
+            </Card>
+          </Stack>
+        ))}
+      </Stack>
     </Box>
   );
 }
