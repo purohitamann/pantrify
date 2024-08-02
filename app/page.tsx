@@ -18,55 +18,17 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardMedia from "@mui/material/CardMedia";
 import CardActions from "@mui/material/CardActions";
-// function card{name,quantity:(name:string,quantity:number)}) {
-function CardCustom({
-  name,
-  quantity,
-  removeItem,
-  addItem,
-}: {
-  name: string;
-  quantity: number;
-  removeItem: (name: string) => void;
-  addItem: (name: string) => void;
-}) {
-  return (
-    <>
-      <CardContent>
-        <Typography variant="h5">{name}</Typography>
-        <Typography sx={{ mb: 1.5 }} color="text.secondary">
-          pantry name
-        </Typography>
-        <Stack direction="row" spacing={1}>
-          <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-            Quantity
-          </Typography>
-          <Typography variant="body2">{quantity}</Typography>
-        </Stack>
-      </CardContent>
-      <CardActions>
-        <Button variant="contained" size="small" onClick={() => addItem(name)}>
-          Add Quantity
-        </Button>
-        <Button
-          variant="contained"
-          size="small"
-          onClick={() => removeItem(name)}
-        >
-          Remove Item
-        </Button>
-      </CardActions>
-    </>
-  );
-}
+import CardComponent from "../components/CardComponent/index";
+import ModalComponent from "../components/ModalComponent/index";
 export default function Home() {
-  // ... existing code ...
   const [inventory, setInventory] = useState<
     { name: string; quantity: number }[]
   >([]);
-  // ... existing code ...// Update the type of inventory state
+
   const [open, setOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [itemName, setItemName] = useState("");
+  const [quantity, setQuantity] = useState(0);
 
   const updateInventory = async () => {
     const snapshot = query(collection(firestore, "inventory"));
@@ -85,8 +47,17 @@ export default function Home() {
   };
 
   const handleClose = () => {
-    setOpen(false);
+
+    setOpen(!open);
   };
+  const handleOpenUpdateModal = () => {
+    setUpdateModalOpen(true);
+  };
+
+  const handleCloseUpdateModal = () => {
+    setUpdateModalOpen(!updateModalOpen);
+  };
+
 
   const removeItem = async (itemName: string) => {
     const docRef = doc(collection(firestore, "inventory"), itemName);
@@ -101,22 +72,7 @@ export default function Home() {
     }
     updateInventory();
   };
-  // const addItem = async (itemName: string) => {
-  //   const docRef = doc(collection(firestore, "inventory"));
-  //   const docSnap = await getDoc(docRef);
-  //   if (docSnap.exists()) {
-  //     const quantity = docSnap.data();
-  //     await updateDoc(docRef, { quantity: quantity.quantity + 1 });
-  //   } else {
-  //     await setDoc(docRef, { quantity: 1 });
-  //   }
-  //   updateInventory();
-  // };
-  // const addItem = async (itemName: string) => {
-  //   const docRef = doc(collection(firestore, "inventory"), itemName);
-  //   await setDoc(docRef, { quantity: 1 }, { merge: true });
-  //   updateInventory();
-  // };
+
   const addItem = async (itemName: string) => {
     const docRef = doc(collection(firestore, "inventory"), itemName);
     await setDoc(
@@ -132,6 +88,12 @@ export default function Home() {
     updateInventory();
     console.log(inventory);
   }, []);
+
+  const updateItem = async (itemName: string, quantity: number) => {
+    const docRef = doc(collection(firestore, "inventory"), itemName);
+    await updateDoc(docRef, { quantity: quantity });
+    updateInventory();
+  };
 
   return (
     <Box
@@ -185,10 +147,69 @@ export default function Home() {
           </Stack>
         </Box>
       </Modal>
+
+      <Modal open={updateModalOpen} onClose={handleCloseUpdateModal}>
+        <Box
+          position="absolute"
+          top="50%"
+          left="50%"
+          width="400px"
+          bgcolor="white"
+          sx={{ transform: "translate(-50%, -50%)" }}
+          boxShadow={24}
+          border={"1px solid black"}
+          p={4}
+          borderRadius={2}
+          display="flex"
+          flexDirection={"column"}
+          gap={3}
+        >
+          <Typography variant="h6">Update Item</Typography>
+          <Stack direction="row" gap={2} flexDirection={"row"}>
+            <TextField
+              value={itemName}
+              fullWidth
+              onChange={(e) =>
+                e.target.value != ""
+                  ? setItemName(e.target.value)
+                  : setItemName("")
+              }
+            />
+            <TextField
+              value={quantity}
+              fullWidth
+              onChange={(e) =>
+                e.target.value != ""
+                  ? setQuantity(Number(e.target.value))
+                  : setQuantity(0)
+              }
+            />
+            <Button
+              variant="contained"
+              onClick={() => {
+                if (itemName !== "") {
+                  updateItem(itemName, quantity);
+                  setItemName("");
+                  setQuantity(0);
+                  handleCloseUpdateModal();
+                }
+              }}
+            >
+              Update
+            </Button>
+          </Stack>
+        </Box>
+      </Modal>
       <Typography variant="h1">Welcome to Pantrify</Typography>
-      <Button variant="contained" onClick={handleOpen}>
-        Add Item
-      </Button>
+      <Stack direction="row" gap={2}>
+        <Button variant="contained" onClick={handleOpen}>
+          Add Item
+        </Button>
+        <Button variant="contained" onClick={handleOpenUpdateModal}>
+          Update Item
+        </Button>
+      </Stack>
+
       <Box>
         <Box
           width={"850px"}
@@ -217,13 +238,15 @@ export default function Home() {
         {inventory.map((item: { name: string; quantity: number }) => (
           <Stack direction={"row"} key={item.name}>
             <Card sx={{ height: "200px" }} variant="outlined">
-              <CardCustom
+              <CardComponent
                 name={item.name}
                 quantity={item.quantity}
                 removeItem={removeItem}
                 addItem={addItem}
+
+                UpdateModalOpen={handleOpenUpdateModal}
               />
-            </Card>
+            </Card >
           </Stack>
         ))}
       </Stack>
