@@ -1,59 +1,54 @@
-import React from "react";
-import { Box, Button, Typography, Stack, AppBar, Toolbar, Container } from "@mui/material";
-import Link from "next/link";
-import Image from "next/image";
-// replace with your image path
-const LandingPage = () => {
-  return (
-    <Box>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Pantrify
-          </Typography>
-          <Button color="inherit" component={Link} href="/signin">
-            Sign In
-          </Button>
-          <Button color="inherit" component={Link} href="/signup">
-            Sign Up
-          </Button>
-        </Toolbar>
-      </AppBar>
-      <Container>
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          flexDirection="column"
-          textAlign="center"
-          minHeight="70vh"
-          gap={3}
-        >
-          <Typography variant="h2" component="h1" gutterBottom>
-            Welcome to Pantrify
-          </Typography>
-          <Typography variant="h5" component="p" gutterBottom>
-            Manage your daily pantry effortlessly.
-          </Typography>
-          <Box width="100%" maxWidth={600} borderColor={"red"}>
-            {/* <Image src={heroImage} alt="Pantry Image" layout="responsive" /> */}
-            {/* <img src="/hero-image.jpg" alt="Pantry Image" /> */}
-          </Box>
-          <Typography variant="body1" component="p" gutterBottom>
-            Soon, you'll be able to add items by clicking a photo of them and get recipe suggestions based on the items available.
-          </Typography>
-          <Stack direction="row" gap={2}>
-            <Button variant="contained" size="large" component={Link} href="/signup">
-              Get Started
-            </Button>
-            <Button variant="outlined" size="large" component={Link} href="/signin">
-              Sign In
-            </Button>
-          </Stack>
-        </Box>
-      </Container>
-    </Box>
-  );
-};
+'use client';
 
-export default LandingPage;
+import * as React from 'react';
+import { Box, Typography, Button, Container } from '@mui/joy';
+import Link from '@mui/joy/Link';
+import Image from 'next/image';
+import NavigationBar from '../components/NavbarComponent/index';
+
+export default function LandingPage() {
+  return (
+    <>
+      <NavigationBar />
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          textAlign: 'center',
+          py: 4,
+          bgcolor: 'primary.050',
+        }}
+      >
+        <Container>
+          <Box >
+            {/* <Typography level="h1" sx={{ mb: 2, }} color='primary'>
+              Welcome to Pantrify
+            </Typography> */}
+            <Box sx={{ mb: 4 }}>
+              <Image src="/Pantrify-bg.png" alt="Pantry Image" width={650} height={280} />
+            </Box>
+
+            <Typography level="body-sm" >
+              Pantrify is an innovative web app that helps you manage your pantry efficiently by tracking your items and providing a user-friendly interface for daily inventory management.
+            </Typography>
+            <Typography level="body-sm" sx={{ mb: 4 }}>
+              As a beta feature, you can soon click a picture of your items to add them to your personal pantry tracker, making it easier than ever to keep track of what you have.
+            </Typography>
+
+            <Box>
+              <Button variant="solid" component={Link} href="/signup" sx={{ mr: 2 }}>
+                Get Started
+              </Button>
+              <Button variant="outlined" component={Link} href="/signin">
+                Sign In
+              </Button>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
+    </>
+  );
+}
