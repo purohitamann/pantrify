@@ -107,7 +107,7 @@ export const initializeUserStructure = async (userId: string) => {
   try {
     // Create a user document in the 'users' collection
     const userDocRef = doc(firestore, 'users', userId);
-    
+    console.log('User doc ref:', userDocRef); 
     // Set initial data for the user document, e.g., empty inventory
     await setDoc(userDocRef, {
       createdAt: new Date(),
