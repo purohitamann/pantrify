@@ -124,6 +124,7 @@ export const initializeUserStructure = async (userId: string) => {
     });
 
     console.log('User structure initialized');
+    console.log('User doc ref:', userDocRef);
   } catch (error) {
     console.error('Error initializing user structure:', error);
     throw error;
